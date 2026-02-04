@@ -143,4 +143,100 @@ public:
     /**
      * @brief 加载内核模块
      * @param module_name 模块名称
-     *
+     * @return 加载是否成功
+     */
+    bool loadModule(const std::string& module_name);
+    
+    /**
+     * @brief 卸载内核模块
+     * @param module_name 模块名称
+     * @return 卸载是否成功
+     */
+    bool unloadModule(const std::string& module_name);
+    
+    /**
+     * @brief 获取已加载的模块列表
+     * @return 模块名称列表
+     */
+    std::vector<std::string> getLoadedModules() const;
+    
+    /**
+     * @brief 设置sysctl参数
+     * @param key 参数键
+     * @param value 参数值
+     * @return 设置是否成功
+     */
+    bool setSysctl(const std::string& key, const std::string& value);
+    
+    /**
+     * @brief 获取sysctl参数值
+     * @param key 参数键
+     * @return 参数值
+     */
+    std::string getSysctl(const std::string& key) const;
+    
+    /**
+     * @brief 应用所有sysctl设置
+     * @return 应用是否成功
+     */
+    bool applySysctlSettings();
+    
+    /**
+     * @brief 获取内核版本信息
+     * @return 内核版本字符串
+     */
+    std::string getKernelVersion() const;
+    
+    /**
+     * @brief 获取系统架构信息
+     * @return 架构字符串
+     */
+    std::string getArchitecture() const;
+    
+    /**
+     * @brief 生成内核配置报告
+     * @return 配置报告字符串
+     */
+    std::string generateReport() const;
+    
+    /**
+     * @brief 重置所有参数为默认值
+     */
+    void resetToDefaults();
+    
+    /**
+     * @brief 检查配置是否需要重启
+     * @return 是否需要重启
+     */
+    bool requiresReboot() const;
+    
+    /**
+     * @brief 获取所有配置参数
+     * @return 参数列表
+     */
+    const std::vector<KernelParameter>& getParameters() const;
+    
+    /**
+     * @brief 获取所有内核模块
+     * @return 模块列表
+     */
+    const std::vector<KernelModule>& getModules() const;
+    
+    /**
+     * @brief 添加参数配置变更监听器
+     * @param callback 变更回调函数
+     */
+    void addParameterChangeListener(std::function<void(const std::string&, const std::string&)> callback);
+    
+    /**
+     * @brief 添加模块状态变更监听器
+     * @param callback 变更回调函数
+     */
+    void addModuleStatusChangeListener(std::function<void(const std::string&, bool)> callback);
+
+private:
+    class Impl;
+    std::unique_ptr<Impl> impl_;
+};
+
+} // namespace CloudFlow::Kernel
