@@ -723,4 +723,12 @@ ssize_t File::write(const void* buffer, size_t size) {
 }
 
 off_t File::seek(off_t offset, int whence) {
-    return impl_->seek(offset
+    return impl_->seek(offset, whence);
+}
+
+off_t File::size() const {
+    return impl_->size();
+}
+
+bool File::isOpen() const {
+    return
