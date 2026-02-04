@@ -488,4 +488,7 @@ private:
     mutable std::mutex mutex_;
     bool initialized_;
     std::unordered_map<FileSystemType, std::shared_ptr<IFileSystem>> file_systems_;
-    std::unordered_map<std::string, MountInfo>
+    std::unordered_map<std::string, MountInfo> mount_info_;
+    std::vector<std::function<void(const std::string&, MountState, MountState)>> mount_state_listeners_;
+    std::vector<std::function<void(const std::string&, const std::string&)>> error_listeners_;
+    mutable std::string last_error_;
