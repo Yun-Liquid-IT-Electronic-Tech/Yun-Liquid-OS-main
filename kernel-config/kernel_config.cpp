@@ -41,4 +41,89 @@ public:
         }
         
         // 加载当前内核参数
-        if (!loadCurrentParameters
+        if (!loadCurrentParameters()) {
+            return false;
+        }
+        
+        // 加载当前模块信息
+        if (!loadCurrentModules()) {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    bool loadConfig(const std::string& config_file) {
+        std::ifstream file(config_file);
+        if (!file.is_open()) {
+            return false;
+        }
+        
+        Json::Value root;
+        Json::CharReaderBuilder reader;
+        std::string errors;
+        
+        if (!Json::parseFromStream(reader, file, &root, &errors)) {
+            return false;
+        }
+        
+        return parseConfig(root);
+    }
+    
+    bool saveConfig(const std::string& config_file) const {
+        Json::Value root;
+        
+        // 保存基本配置
+        root["version"] = config_.version;
+        root["arch"] = config_.arch;
+        
+        // 保存参数
+        Json::Value params(Json::arrayValue);
+        for (const auto& param : config_.parameters) {
+            Json::Value param_obj;
+            param_obj["name"] = param.name;
+            param_obj["description"] = param.description;
+            param_obj["type"] = static_cast<int>(param.type);
+            param_obj["value"] = param.value;
+            param_obj["default_value"] = param.default_value;
+            param_obj["is_runtime"] = param.is_runtime;
+            param_obj["is_required"] = param.is_required;
+            
+            if (!param.min_value.empty()) {
+                param_obj["min_value"] = param.min_value;
+            }
+            if (!param.max_value.empty()) {
+                param_obj["max_value"] = param.max_value;
+            }
+            
+            params.append(param_obj);
+        }
+        root["parameters"] = params;
+        
+        // 保存模块
+        Json::Value modules(Json::arrayValue);
+        for (const auto& module : config_.modules) {
+            Json::Value module_obj;
+            module_obj["name"] = module.name;
+            module_obj["description"] = module.description;
+            module_obj["auto_load"] = module.auto_load;
+            module_obj["is_builtin"] = module.is_builtin;
+            
+            if (!module.file_path.empty()) {
+                module_obj["file_path"] = module.file_path;
+            }
+            
+            modules.append(module_obj);
+        }
+        root["modules"] = modules;
+        
+        // 保存sysctl设置
+        Json::Value sysctl_obj;
+        for (const auto& setting : config_.sysctl_settings) {
+            sysctl_obj[setting.first] = setting.second;
+        }
+        root["sysctl"] = sysctl_obj;
+        
+        // 写入文件
+        std::ofstream file(config_file);
+        if (!file.is_open()) {
