@@ -142,4 +142,8 @@ public:
         bool success = true;
         
         // 应用参数设置
-        for (const
+        for (const auto& param : config_.parameters) {
+            if (!applyParameter(param)) {
+                success = false;
+                // 记录错误但不停止应用其他参数
+            }
