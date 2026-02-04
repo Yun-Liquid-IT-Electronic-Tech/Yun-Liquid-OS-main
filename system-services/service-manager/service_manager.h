@@ -172,3 +172,6 @@ public:
      */
     std::vector<std::string> getServiceNames() const;
     
+    /**
+     * @brief 获取服务配置
+     * @param service_name
