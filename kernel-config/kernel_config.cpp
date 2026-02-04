@@ -191,4 +191,10 @@ public:
                                                   config_.parameters.end(),
                                                   [&](const KernelParameter& p) { 
                                                       return p.name == conflict; 
-                                                  }
+                                                  });
+                
+                if (conflict_param != config_.parameters.end() && 
+                    !conflict_param->value.empty()) {
+                    return false; // 冲突参数已设置
+                }
+            }
