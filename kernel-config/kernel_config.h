@@ -130,4 +130,10 @@ public:
      * @param param_name 参数名称
      * @return 参数值，如果参数不存在则返回空字符串
      */
-    std::string getParameterValue
+    std::string getParameterValue(const std::string& param_name) const;
+    
+    /**
+     * @brief 设置内核参数值
+     * @param param_name 参数名称
+     * @param value 参数值
+     * @
