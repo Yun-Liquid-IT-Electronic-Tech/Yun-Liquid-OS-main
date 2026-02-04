@@ -214,4 +214,9 @@ public:
     bool stopAllServices();
     
     /**
-     * @brief 重新加载
+     * @brief 重新加载服务配置
+     * @return 成功返回true
+     */
+    bool reloadConfig();
+    
+    /**
