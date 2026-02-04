@@ -64,4 +64,5 @@ enum class ServicePriority {
 struct ServiceConfig {
     std::string name;               ///< 服务名称
     std::string description;        ///< 服务描述
-    Service
+    ServiceType type;               ///< 服务类型
+    ServicePriority priority;       ///< 启动优先级
