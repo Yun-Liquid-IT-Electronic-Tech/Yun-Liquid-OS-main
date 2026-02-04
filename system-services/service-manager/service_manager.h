@@ -227,4 +227,6 @@ public:
     
     /**
      * @brief 设置服务错误回调
-     * @
+     * @param callback 回调函数
+     */
+    void setErrorCallback(std::function<void(const
