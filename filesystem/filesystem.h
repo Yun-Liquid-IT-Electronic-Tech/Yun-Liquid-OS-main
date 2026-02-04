@@ -430,4 +430,26 @@ private:
  * @class Directory
  * @brief 目录操作类
  * 
- * 提供统一的
+ * 提供统一的目录遍历接口
+ */
+class Directory {
+public:
+    /**
+     * @brief 构造函数
+     */
+    Directory();
+    
+    /**
+     * @brief 析构函数
+     */
+    ~Directory();
+    
+    /**
+     * @brief 打开目录
+     * @param path 目录路径
+     * @return 打开是否成功
+     */
+    bool open(const std::string& path);
+    
+    /**
+     * @brief
