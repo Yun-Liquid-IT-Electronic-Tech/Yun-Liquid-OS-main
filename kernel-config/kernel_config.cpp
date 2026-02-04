@@ -147,3 +147,48 @@ public:
                 success = false;
                 // 记录错误但不停止应用其他参数
             }
+        }
+        
+        // 应用模块加载
+        for (const auto& module : config_.modules) {
+            if (module.auto_load && !module.is_builtin) {
+                if (!loadModuleInternal(module.name)) {
+                    success = false;
+                }
+            }
+        }
+        
+        // 应用sysctl设置
+        if (!applySysctlSettings()) {
+            success = false;
+        }
+        
+        return success;
+    }
+    
+    bool validateConfig() const {
+        // 检查参数依赖关系
+        for (const auto& param : config_.parameters) {
+            for (const auto& dep : param.dependencies) {
+                auto dep_param = std::find_if(config_.parameters.begin(), 
+                                             config_.parameters.end(),
+                                             [&](const KernelParameter& p) { 
+                                                 return p.name == dep; 
+                                             });
+                
+                if (dep_param == config_.parameters.end()) {
+                    return false; // 依赖参数不存在
+                }
+                
+                if (dep_param->value.empty() && dep_param->is_required) {
+                    return false; // 必需依赖参数未设置
+                }
+            }
+            
+            // 检查冲突
+            for (const auto& conflict : param.conflicts) {
+                auto conflict_param = std::find_if(config_.parameters.begin(), 
+                                                  config_.parameters.end(),
+                                                  [&](const KernelParameter& p) { 
+                                                      return p.name == conflict; 
+                                                  }
