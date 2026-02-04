@@ -141,3 +141,6 @@ public:
     bool setParameterValue(const std::string& param_name, const std::string& value);
     
     /**
+     * @brief 加载内核模块
+     * @param module_name 模块名称
+     *
