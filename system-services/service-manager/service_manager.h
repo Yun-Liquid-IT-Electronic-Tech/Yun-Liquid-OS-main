@@ -1,0 +1,54 @@
+/**
+ * @file service_manager.h
+ * @brief 系统服务管理器
+ * @author 云流操作系统开发团队
+ * @date 2026-02-04
+ * @version 1.0.0
+ * 
+ * 负责管理系统服务的启动、停止、状态监控和依赖关系管理
+ */
+
+#ifndef CLOUDFLOW_SERVICE_MANAGER_H
+#define CLOUDFLOW_SERVICE_MANAGER_H
+
+#include <memory>
+#include <string>
+#include <vector>
+#include <unordered_map>
+#include <functional>
+#include <chrono>
+
+namespace CloudFlow {
+namespace System {
+
+// 前置声明
+class Service;
+
+/**
+ * @brief 服务状态枚举
+ */
+enum class ServiceState {
+    Stopped,        ///< 已停止
+    Starting,       ///< 启动中
+    Running,        ///< 运行中
+    Stopping,       ///< 停止中
+    Failed,         ///< 启动失败
+    Unknown         ///< 未知状态
+};
+
+/**
+ * @brief 服务类型枚举
+ */
+enum class ServiceType {
+    System,         ///< 系统核心服务
+    Network,        ///< 网络服务
+    Storage,        ///< 存储服务
+    User,           ///< 用户服务
+    Application     ///< 应用服务
+};
+
+/**
+ * @brief 服务启动优先级
+ */
+enum class ServicePriority {
+    Critical = 0,   ///<
