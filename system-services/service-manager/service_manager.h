@@ -232,3 +232,5 @@ public:
     void setErrorCallback(std::function<void(const std::string&, const std::string&)> callback);
     
     /**
+     * @brief 监控服务状态
+     * @param interval 监控间隔（
