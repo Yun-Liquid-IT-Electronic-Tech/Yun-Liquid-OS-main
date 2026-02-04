@@ -51,4 +51,12 @@ enum class ServiceType {
  * @brief 服务启动优先级
  */
 enum class ServicePriority {
-    Critical = 0,   ///<
+    Critical = 0,   ///< 关键服务（最先启动）
+    High = 1,       ///< 高优先级
+    Normal = 2,     ///< 普通优先级
+    Low = 3,        ///< 低优先级
+    Idle = 4        ///< 空闲优先级（最后启动）
+};
+
+/**
+ * @
