@@ -238,3 +238,30 @@ public:
     void startMonitoring(int interval = 1000);
     
     /**
+     * @brief 停止监控
+     */
+    void stopMonitoring();
+    
+    /**
+     * @brief 保存服务状态
+     * @param filename 保存文件名
+     * @return 成功返回true
+     */
+    bool saveServiceState(const std::string& filename) const;
+    
+    /**
+     * @brief 恢复服务状态
+     * @param filename 状态文件名
+     * @return 成功返回true
+     */
+    bool restoreServiceState(const std::string& filename);
+
+private:
+    class Impl;
+    std::unique_ptr<Impl> impl_;
+};
+
+} // namespace System
+} // namespace CloudFlow
+
+#endif // CLOUDFLOW_SERVICE_MANAGER_H
