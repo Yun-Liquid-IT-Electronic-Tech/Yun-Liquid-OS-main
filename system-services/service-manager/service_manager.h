@@ -167,3 +167,6 @@ public:
     bool isServiceRunning(const std::string& service_name) const;
     
     /**
+     * @brief 获取所有服务名称
+     * @return 服务名称列表
+     */
