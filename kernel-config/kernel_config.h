@@ -138,4 +138,6 @@ public:
      * @param value 参数值
      * @return 设置是否成功
      */
-    bool setParameterValue(const std::string&
+    bool setParameterValue(const std::string& param_name, const std::string& value);
+    
+    /**
