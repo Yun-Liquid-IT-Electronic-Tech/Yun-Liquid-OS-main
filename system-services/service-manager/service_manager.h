@@ -59,4 +59,9 @@ enum class ServicePriority {
 };
 
 /**
- * @
+ * @brief 服务配置信息
+ */
+struct ServiceConfig {
+    std::string name;               ///< 服务名称
+    std::string description;        ///< 服务描述
+    Service
