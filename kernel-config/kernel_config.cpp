@@ -127,3 +127,19 @@ public:
         // 写入文件
         std::ofstream file(config_file);
         if (!file.is_open()) {
+            return false;
+        }
+        
+        Json::StreamWriterBuilder writer;
+        writer["indentation"] = "    ";
+        std::unique_ptr<Json::StreamWriter> json_writer(writer.newStreamWriter());
+        json_writer->write(root, &file);
+        
+        return true;
+    }
+    
+    bool applyConfig() {
+        bool success = true;
+        
+        // 应用参数设置
+        for (const
