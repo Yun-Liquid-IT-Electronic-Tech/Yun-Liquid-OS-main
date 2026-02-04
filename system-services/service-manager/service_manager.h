@@ -195,4 +195,6 @@ public:
     bool enableService(const std::string& service_name);
     
     /**
-     * @brief 禁用服务
+     * @brief 禁用服务自动启动
+     * @param service_name 服务名称
+     * @return 成功返回
