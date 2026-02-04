@@ -18,4 +18,12 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-namespace CloudFlow::File
+namespace CloudFlow::FileSystem {
+
+// 文件系统管理器实现类
+class FileSystemManager::Impl {
+public:
+    Impl() : initialized_(false) {}
+    
+    ~Impl() {
+        cleanup();
