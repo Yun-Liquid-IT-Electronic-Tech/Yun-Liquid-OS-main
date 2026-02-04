@@ -39,3 +39,8 @@ public:
         try {
             // 初始化默认文件系统驱动程序
             initializeDefaultFileSystems();
+            
+            // 扫描已挂载的文件系统
+            scanMounts();
+            
+            initialized_ = true
