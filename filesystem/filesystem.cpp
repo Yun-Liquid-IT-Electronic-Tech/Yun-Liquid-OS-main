@@ -739,3 +739,10 @@ FileInfo File::getInfo() const {
 }
 
 bool File::flush() {
+    return impl_->flush();
+}
+
+// Directory 类实现
+class Directory::Impl {
+public:
+    Impl() :
