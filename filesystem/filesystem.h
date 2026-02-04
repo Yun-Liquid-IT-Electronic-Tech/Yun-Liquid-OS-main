@@ -452,4 +452,11 @@ public:
     bool open(const std::string& path);
     
     /**
-     * @brief
+     * @brief 关闭目录
+     */
+    void close();
+    
+    /**
+     * @brief 读取下一个目录项
+     * @return 目录项信息，如果到达末尾则返回空对象
+     */
