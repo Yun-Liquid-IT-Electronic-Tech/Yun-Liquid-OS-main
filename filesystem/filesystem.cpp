@@ -715,4 +715,11 @@ void File::close() {
 }
 
 ssize_t File::read(void* buffer, size_t size) {
-    return impl_->read(buffer, size
+    return impl_->read(buffer, size);
+}
+
+ssize_t File::write(const void* buffer, size_t size) {
+    return impl_->write(buffer, size);
+}
+
+off_t
