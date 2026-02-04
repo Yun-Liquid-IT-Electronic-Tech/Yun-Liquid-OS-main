@@ -174,4 +174,7 @@ public:
     
     /**
      * @brief 获取服务配置
-     * @param service_name
+     * @param service_name 服务名称
+     * @return 服务配置信息
+     */
+    ServiceConfig get
