@@ -66,3 +66,4 @@ struct ServiceConfig {
     std::string description;        ///< 服务描述
     ServiceType type;               ///< 服务类型
     ServicePriority priority;       ///< 启动优先级
+    std::string executable_path;    ///<
