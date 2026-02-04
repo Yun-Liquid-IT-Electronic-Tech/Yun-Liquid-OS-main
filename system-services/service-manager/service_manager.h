@@ -177,4 +177,6 @@ public:
      * @param service_name 服务名称
      * @return 服务配置信息
      */
-    ServiceConfig get
+    ServiceConfig getServiceConfig(const std::string& service_name) const;
+    
+    /**
