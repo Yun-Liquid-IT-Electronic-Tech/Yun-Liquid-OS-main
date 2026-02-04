@@ -189,3 +189,6 @@ public:
     
     /**
      * @brief 启用服务自动启动
+     * @param service_name 服务名称
+     * @return 成功返回true
+     */
