@@ -731,4 +731,11 @@ off_t File::size() const {
 }
 
 bool File::isOpen() const {
-    return
+    return impl_->isOpen();
+}
+
+FileInfo File::getInfo() const {
+    return impl_->getInfo();
+}
+
+bool File::flush() {
