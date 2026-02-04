@@ -197,4 +197,21 @@ public:
     /**
      * @brief 禁用服务自动启动
      * @param service_name 服务名称
-     * @return 成功返回
+     * @return 成功返回true
+     */
+    bool disableService(const std::string& service_name);
+    
+    /**
+     * @brief 启动所有自动启动的服务
+     * @return 成功返回true
+     */
+    bool startAllServices();
+    
+    /**
+     * @brief 停止所有服务
+     * @return 成功返回true
+     */
+    bool stopAllServices();
+    
+    /**
+     * @brief 重新加载
