@@ -722,4 +722,5 @@ ssize_t File::write(const void* buffer, size_t size) {
     return impl_->write(buffer, size);
 }
 
-off_t
+off_t File::seek(off_t offset, int whence) {
+    return impl_->seek(offset
