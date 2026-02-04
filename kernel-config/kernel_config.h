@@ -136,4 +136,6 @@ public:
      * @brief 设置内核参数值
      * @param param_name 参数名称
      * @param value 参数值
-     * @
+     * @return 设置是否成功
+     */
+    bool setParameterValue(const std::string&
