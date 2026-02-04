@@ -194,3 +194,5 @@ public:
      */
     bool enableService(const std::string& service_name);
     
+    /**
+     * @brief 禁用服务
