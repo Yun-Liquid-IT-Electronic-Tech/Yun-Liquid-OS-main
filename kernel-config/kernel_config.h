@@ -79,4 +79,53 @@ struct KernelConfig {
  * @class KernelConfigManager
  * @brief 内核配置管理器
  * 
- * 负责管理内核配置参数的加载、验证、应用和持久
+ * 负责管理内核配置参数的加载、验证、应用和持久化
+ */
+class KernelConfigManager {
+public:
+    /**
+     * @brief 构造函数
+     */
+    KernelConfigManager();
+    
+    /**
+     * @brief 析构函数
+     */
+    ~KernelConfigManager();
+    
+    /**
+     * @brief 初始化配置管理器
+     * @return 初始化是否成功
+     */
+    bool initialize();
+    
+    /**
+     * @brief 从JSON文件加载配置
+     * @param config_file 配置文件路径
+     * @return 加载是否成功
+     */
+    bool loadConfig(const std::string& config_file);
+    
+    /**
+     * @brief 保存配置到JSON文件
+     * @param config_file 配置文件路径
+     * @return 保存是否成功
+     */
+    bool saveConfig(const std::string& config_file) const;
+    
+    /**
+     * @brief 应用内核配置
+     * @return 应用是否成功
+     */
+    bool applyConfig();
+    
+    /**
+     * @brief 验证配置的有效性
+     * @return 配置是否有效
+     */
+    bool validateConfig() const;
+    
+    /**
+     * @brief 获取当前内核参数值
+     * @param param_name 参数名称
+     * @return 参数值
