@@ -487,4 +487,5 @@ private:
 private:
     mutable std::mutex mutex_;
     bool initialized_;
-    std::unordered_map
+    std::unordered_map<FileSystemType, std::shared_ptr<IFileSystem>> file_systems_;
+    std::unordered_map<std::string, MountInfo>
