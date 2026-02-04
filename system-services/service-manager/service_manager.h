@@ -236,3 +236,5 @@ public:
      * @param interval 监控间隔（毫秒）
      */
     void startMonitoring(int interval = 1000);
+    
+    /**
