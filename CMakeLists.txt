@@ -2,3 +2,6 @@
 
 # 添加系统服务模块
 add_subdirectory(system-services)
+
+# 添加内核配置模块
+add_subdirectory(kernel-config)
