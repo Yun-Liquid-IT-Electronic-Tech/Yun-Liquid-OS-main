@@ -480,4 +480,11 @@ private:
         }
         
         file_systems_.clear();
-        mount_info_.
+        mount_info_.clear();
+        initialized_ = false;
+    }
+
+private:
+    mutable std::mutex mutex_;
+    bool initialized_;
+    std::unordered_map
