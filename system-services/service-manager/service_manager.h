@@ -192,3 +192,5 @@ public:
      * @param service_name 服务名称
      * @return 成功返回true
      */
+    bool enableService(const std::string& service_name);
+    
