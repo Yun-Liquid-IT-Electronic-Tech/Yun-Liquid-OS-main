@@ -198,3 +198,9 @@ public:
                     return false; // 冲突参数已设置
                 }
             }
+        }
+        
+        return true;
+    }
+    
+    std::string getParameterValue(const std::string& param_name
