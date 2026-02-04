@@ -33,3 +33,9 @@ public:
         std::lock_guard<std::mutex> lock(mutex_);
         
         if (initialized_) {
+            return true;
+        }
+        
+        try {
+            // 初始化默认文件系统驱动程序
+            initializeDefaultFileSystems();
