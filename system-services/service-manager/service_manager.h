@@ -170,3 +170,5 @@ public:
      * @brief 获取所有服务名称
      * @return 服务名称列表
      */
+    std::vector<std::string> getServiceNames() const;
+    
