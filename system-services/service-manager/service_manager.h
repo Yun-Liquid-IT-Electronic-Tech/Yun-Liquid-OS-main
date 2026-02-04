@@ -164,4 +164,6 @@ public:
      * @param service_name 服务名称
      * @return 运行中返回true
      */
-    bool isService
+    bool isServiceRunning(const std::string& service_name) const;
+    
+    /**
