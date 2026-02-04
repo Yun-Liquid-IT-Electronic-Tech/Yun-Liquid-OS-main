@@ -180,3 +180,5 @@ public:
     ServiceConfig getServiceConfig(const std::string& service_name) const;
     
     /**
+     * @brief 设置服务配置
+     * @param service_name 服务名称
