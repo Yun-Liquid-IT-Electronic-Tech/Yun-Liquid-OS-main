@@ -153,4 +153,15 @@ public:
     bool restartService(const std::string& service_name);
     
     /**
-     * @brief
+     * @brief 获取服务状态
+     * @param service_name 服务名称
+     * @return 服务状态信息
+     */
+    ServiceStatus getServiceStatus(const std::string& service_name) const;
+    
+    /**
+     * @brief 检查服务是否运行
+     * @param service_name 服务名称
+     * @return 运行中返回true
+     */
+    bool isService
