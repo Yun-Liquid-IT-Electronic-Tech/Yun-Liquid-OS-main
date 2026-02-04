@@ -27,3 +27,9 @@ public:
     
     ~Impl() {
         cleanup();
+    }
+    
+    bool initialize() {
+        std::lock_guard<std::mutex> lock(mutex_);
+        
+        if (initialized_) {
