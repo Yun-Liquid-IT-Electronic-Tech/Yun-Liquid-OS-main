@@ -307,4 +307,177 @@ public:
         return supported_types;
     }
     
-    void addMountStateChangeListener(std::function<void(const std::string&
+    void addMountStateChangeListener(std::function<void(const std::string&, MountState, MountState)> callback) {
+        std::lock_guard<std::mutex> lock(mutex_);
+        mount_state_listeners_.push_back(callback);
+    }
+    
+    void addFileSystemErrorListener(std::function<void(const std::string&, const std::string&)> callback) {
+        std::lock_guard<std::mutex> lock(mutex_);
+        error_listeners_.push_back(callback);
+    }
+    
+    std::string generateReport() const {
+        std::lock_guard<std::mutex> lock(mutex_);
+        
+        std::ostringstream report;
+        report << "文件系统管理器报告\n";
+        report << "==================\n\n";
+        
+        report << "初始化状态: " << (initialized_ ? "已初始化" : "未初始化") << "\n";
+        report << "支持的文件系统类型数量: " << file_systems_.size() << "\n";
+        report << "当前挂载点数量: " << mount_info_.size() << "\n\n";
+        
+        report << "挂载点详情:\n";
+        for (const auto& pair : mount_info_) {
+            const MountInfo& info = pair.second;
+            report << "  挂载点: " << info.mount_point << "\n";
+            report << "    设备: " << info.device << "\n";
+            report << "    文件系统: " << fsTypeToString(info.fs_type) << "\n";
+            report << "    状态: " << mountStateToString(info.state) << "\n";
+            report << "    总空间: " << info.total_size / (1024 * 1024) << " MB\n";
+            report << "    可用空间: " << info.free_size / (1024 * 1024) << " MB\n";
+            report << "    已用空间: " << info.used_size / (1024 * 1024) << " MB\n\n";
+        }
+        
+        return report.str();
+    }
+    
+    bool saveMountConfig(const std::string& file_path) const {
+        std::lock_guard<std::mutex> lock(mutex_);
+        
+        std::ofstream config_file(file_path);
+        if (!config_file.is_open()) {
+            last_error_ = "无法打开配置文件";
+            return false;
+        }
+        
+        for (const auto& pair : mount_info_) {
+            const MountInfo& info = pair.second;
+            config_file << info.device << " " << info.mount_point << " " 
+                       << fsTypeToString(info.fs_type) << " " << info.options << "\n";
+        }
+        
+        return true;
+    }
+    
+    bool loadMountConfig(const std::string& file_path) {
+        std::lock_guard<std::mutex> lock(mutex_);
+        
+        std::ifstream config_file(file_path);
+        if (!config_file.is_open()) {
+            last_error_ = "无法打开配置文件";
+            return false;
+        }
+        
+        std::string line;
+        while (std::getline(config_file, line)) {
+            std::istringstream iss(line);
+            std::string device, mount_point, fs_type_str, options;
+            
+            if (iss >> device >> mount_point >> fs_type_str >> options) {
+                FileSystemType fs_type = parseFsType(fs_type_str);
+                if (fs_type != FileSystemType::Unknown) {
+                    mount(device, mount_point, fs_type, options);
+                }
+            }
+        }
+        
+        return true;
+    }
+    
+    bool autoMountAll() {
+        std::lock_guard<std::mutex> lock(mutex_);
+        
+        // 扫描并自动挂载所有配置的文件系统
+        size_t mounted_count = 0;
+        
+        // 这里可以添加自动挂载逻辑，比如根据/etc/fstab配置
+        // 目前简化实现，只挂载根文件系统
+        
+        return mounted_count > 0;
+    }
+    
+    std::string getLastError() const {
+        return last_error_;
+    }
+
+private:
+    void initializeDefaultFileSystems() {
+        // 这里可以添加默认的文件系统驱动程序
+        // 目前为空实现，实际项目中需要根据具体需求添加
+    }
+    
+    void scanMounts() {
+        // 扫描当前系统的挂载信息
+        scanFileSystems();
+    }
+    
+    bool createDirectory(const std::string& path) {
+        // 简化实现，实际项目中需要更完善的目录创建逻辑
+        return mkdir(path.c_str(), 0755) == 0 || errno == EEXIST;
+    }
+    
+    std::string findMountPoint(const std::string& path) const {
+        // 查找路径对应的挂载点
+        for (const auto& pair : mount_info_) {
+            if (path.find(pair.first) == 0) {
+                return pair.first;
+            }
+        }
+        return "";
+    }
+    
+    FileSystemType parseFsType(const std::string& fs_type_str) const {
+        if (fs_type_str == "ext4") return FileSystemType::Ext4;
+        if (fs_type_str == "xfs") return FileSystemType::XFS;
+        if (fs_type_str == "btrfs") return FileSystemType::Btrfs;
+        if (fs_type_str == "ntfs") return FileSystemType::NTFS;
+        if (fs_type_str == "vfat") return FileSystemType::FAT32;
+        if (fs_type_str == "exfat") return FileSystemType::ExFAT;
+        return FileSystemType::Unknown;
+    }
+    
+    std::string fsTypeToString(FileSystemType type) const {
+        switch (type) {
+            case FileSystemType::Ext4: return "ext4";
+            case FileSystemType::XFS: return "xfs";
+            case FileSystemType::Btrfs: return "btrfs";
+            case FileSystemType::NTFS: return "ntfs";
+            case FileSystemType::FAT32: return "vfat";
+            case FileSystemType::ExFAT: return "exfat";
+            default: return "unknown";
+        }
+    }
+    
+    std::string mountStateToString(MountState state) const {
+        switch (state) {
+            case MountState::Unmounted: return "未挂载";
+            case MountState::Mounting: return "挂载中";
+            case MountState::Mounted: return "已挂载";
+            case MountState::Unmounting: return "卸载中";
+            case MountState::Error: return "错误";
+            default: return "未知";
+        }
+    }
+    
+    void notifyMountStateChange(const std::string& mount_point, MountState old_state, MountState new_state) {
+        for (const auto& listener : mount_state_listeners_) {
+            listener(mount_point, old_state, new_state);
+        }
+    }
+    
+    void notifyFileSystemError(const std::string& mount_point, const std::string& error) {
+        for (const auto& listener : error_listeners_) {
+            listener(mount_point, error);
+        }
+    }
+    
+    void cleanup() {
+        // 卸载所有挂载的文件系统
+        for (const auto& mount_point : getMountPoints()) {
+            unmount(mount_point);
+        }
+        
+        file_systems_.clear();
+        mount_info_.
