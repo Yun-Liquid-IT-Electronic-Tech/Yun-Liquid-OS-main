@@ -182,3 +182,5 @@ public:
     /**
      * @brief 设置服务配置
      * @param service_name 服务名称
+     * @param config 新的配置
+     *
