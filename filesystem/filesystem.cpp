@@ -492,3 +492,204 @@ private:
     std::vector<std::function<void(const std::string&, MountState, MountState)>> mount_state_listeners_;
     std::vector<std::function<void(const std::string&, const std::string&)>> error_listeners_;
     mutable std::string last_error_;
+};
+
+// FileSystemManager 公共接口实现
+FileSystemManager::FileSystemManager() : impl_(std::make_unique<Impl>()) {}
+
+FileSystemManager::~FileSystemManager() = default;
+
+bool FileSystemManager::initialize() {
+    return impl_->initialize();
+}
+
+bool FileSystemManager::registerFileSystem(std::shared_ptr<IFileSystem> fs, FileSystemType fs_type) {
+    return impl_->registerFileSystem(fs, fs_type);
+}
+
+bool FileSystemManager::unregisterFileSystem(FileSystemType fs_type) {
+    return impl_->unregisterFileSystem(fs_type);
+}
+
+bool FileSystemManager::mount(const std::string& device, const std::string& mount_point, 
+                             FileSystemType fs_type, const std::string& options) {
+    return impl_->mount(device, mount_point, fs_type, options);
+}
+
+bool FileSystemManager::unmount(const std::string& mount_point) {
+    return impl_->unmount(mount_point);
+}
+
+bool FileSystemManager::remount(const std::string& mount_point, const std::string& options) {
+    return impl_->remount(mount_point, options);
+}
+
+bool FileSystemManager::check(const std::string& device, FileSystemType fs_type) {
+    return impl_->check(device, fs_type);
+}
+
+bool FileSystemManager::format(const std::string& device, FileSystemType fs_type, const std::string& options) {
+    return impl_->format(device, fs_type, options);
+}
+
+std::vector<std::string> FileSystemManager::getMountPoints() const {
+    return impl_->getMountPoints();
+}
+
+MountInfo FileSystemManager::getMountInfo(const std::string& mount_point) const {
+    return impl_->getMountInfo(mount_point);
+}
+
+FileSystemStats FileSystemManager::getStats(const std::string& path) const {
+    return impl_->getStats(path);
+}
+
+size_t FileSystemManager::scanFileSystems() {
+    return impl_->scanFileSystems();
+}
+
+std::vector<FileSystemType> FileSystemManager::getSupportedFileSystems() const {
+    return impl_->getSupportedFileSystems();
+}
+
+void FileSystemManager::addMountStateChangeListener(std::function<void(const std::string&, MountState, MountState)> callback) {
+    impl_->addMountStateChangeListener(callback);
+}
+
+void FileSystemManager::addFileSystemErrorListener(std::function<void(const std::string&, const std::string&)> callback) {
+    impl_->addFileSystemErrorListener(callback);
+}
+
+std::string FileSystemManager::generateReport() const {
+    return impl_->generateReport();
+}
+
+bool FileSystemManager::saveMountConfig(const std::string& file_path) const {
+    return impl_->saveMountConfig(file_path);
+}
+
+bool FileSystemManager::loadMountConfig(const std::string& file_path) {
+    return impl_->loadMountConfig(file_path);
+}
+
+bool FileSystemManager::autoMountAll() {
+    return impl_->autoMountAll();
+}
+
+// File 类实现
+class File::Impl {
+public:
+    Impl() : fd_(-1), file_size_(0) {}
+    
+    ~Impl() {
+        close();
+    }
+    
+    bool open(const std::string& path, const std::string& mode) {
+        if (fd_ != -1) {
+            close();
+        }
+        
+        int flags = 0;
+        if (mode.find('r') != std::string::npos) flags |= O_RDONLY;
+        if (mode.find('w') != std::string::npos) flags |= O_WRONLY | O_CREAT | O_TRUNC;
+        if (mode.find('a') != std::string::npos) flags |= O_WRONLY | O_CREAT | O_APPEND;
+        if (mode.find('+') != std::string::npos) flags = O_RDWR | O_CREAT;
+        
+        fd_ = ::open(path.c_str(), flags, 0644);
+        if (fd_ == -1) {
+            last_error_ = "无法打开文件: " + std::string(strerror(errno));
+            return false;
+        }
+        
+        // 获取文件大小
+        struct stat st;
+        if (fstat(fd_, &st) == 0) {
+            file_size_ = st.st_size;
+        }
+        
+        file_info_.path = path;
+        file_info_.name = path.substr(path.find_last_of('/') + 1);
+        file_info_.type = FileType::Regular;
+        file_info_.size = file_size_;
+        
+        return true;
+    }
+    
+    void close() {
+        if (fd_ != -1) {
+            ::close(fd_);
+            fd_ = -1;
+        }
+    }
+    
+    ssize_t read(void* buffer, size_t size) {
+        if (fd_ == -1) {
+            last_error_ = "文件未打开";
+            return -1;
+        }
+        
+        ssize_t bytes_read = ::read(fd_, buffer, size);
+        if (bytes_read == -1) {
+            last_error_ = "读取文件失败: " + std::string(strerror(errno));
+        }
+        
+        return bytes_read;
+    }
+    
+    ssize_t write(const void* buffer, size_t size) {
+        if (fd_ == -1) {
+            last_error_ = "文件未打开";
+            return -1;
+        }
+        
+        ssize_t bytes_written = ::write(fd_, buffer, size);
+        if (bytes_written == -1) {
+            last_error_ = "写入文件失败: " + std::string(strerror(errno));
+        }
+        
+        return bytes_written;
+    }
+    
+    off_t seek(off_t offset, int whence) {
+        if (fd_ == -1) {
+            last_error_ = "文件未打开";
+            return -1;
+        }
+        
+        off_t result = lseek(fd_, offset, whence);
+        if (result == -1) {
+            last_error_ = "设置文件指针失败: " + std::string(strerror(errno));
+        }
+        
+        return result;
+    }
+    
+    off_t size() const {
+        return file_size_;
+    }
+    
+    bool isOpen() const {
+        return fd_ != -1;
+    }
+    
+    FileInfo getInfo() const {
+        return file_info_;
+    }
+    
+    bool flush() {
+        if (fd_ == -1) {
+            last_error_ = "文件未打开";
+            return false;
+        }
+        
+        if (fsync(fd_) == -1) {
+            last_error_ = "刷新文件缓冲区失败: " + std::string(strerror(errno));
+            return false;
+        }
+        
+        return true;
+    }
+    
+    std::string getLastError() const {
+        return
