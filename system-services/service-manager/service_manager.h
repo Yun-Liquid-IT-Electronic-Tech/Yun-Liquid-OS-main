@@ -70,4 +70,5 @@ struct ServiceConfig {
     std::vector<std::string> args;  ///< 启动参数
     std::vector<std::string> dependencies; ///< 依赖服务
     bool auto_start;                ///< 是否自动启动
-    int restart_delay;              ///< 重启延迟（
+    int restart_delay;              ///< 重启延迟（毫秒）
+    int max_restart_attempts;       ///< 最大重启
