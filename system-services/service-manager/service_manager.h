@@ -233,4 +233,6 @@ public:
     
     /**
      * @brief 监控服务状态
-     * @param interval 监控间隔（
+     * @param interval 监控间隔（毫秒）
+     */
+    void startMonitoring(int interval = 1000);
