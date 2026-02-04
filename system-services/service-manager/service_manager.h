@@ -71,4 +71,86 @@ struct ServiceConfig {
     std::vector<std::string> dependencies; ///< 依赖服务
     bool auto_start;                ///< 是否自动启动
     int restart_delay;              ///< 重启延迟（毫秒）
-    int max_restart_attempts;       ///< 最大重启
+    int max_restart_attempts;       ///< 最大重启尝试次数
+    std::string working_directory;  ///< 工作目录
+    std::unordered_map<std::string, std::string> environment; ///< 环境变量
+};
+
+/**
+ * @brief 服务状态信息
+ */
+struct ServiceStatus {
+    ServiceState state;             ///< 当前状态
+    int pid;                        ///< 进程ID
+    std::chrono::system_clock::time_point start_time; ///< 启动时间
+    std::chrono::system_clock::time_point last_activity; ///< 最后活动时间
+    int restart_count;              ///< 重启次数
+    std::string last_error;         ///< 最后错误信息
+    int memory_usage;               ///< 内存使用量（KB）
+    double cpu_usage;               ///< CPU使用率
+};
+
+/**
+ * @brief 服务管理器类
+ * 
+ * 采用PIMPL模式实现，提供完整的服务管理功能
+ */
+class ServiceManager {
+public:
+    /**
+     * @brief 构造函数
+     */
+    ServiceManager();
+    
+    /**
+     * @brief 析构函数
+     */
+    ~ServiceManager();
+    
+    // 禁用拷贝和赋值
+    ServiceManager(const ServiceManager&) = delete;
+    ServiceManager& operator=(const ServiceManager&) = delete;
+    
+    /**
+     * @brief 初始化服务管理器
+     * @return 成功返回true
+     */
+    bool initialize();
+    
+    /**
+     * @brief 注册服务
+     * @param config 服务配置
+     * @return 成功返回true
+     */
+    bool registerService(const ServiceConfig& config);
+    
+    /**
+     * @brief 注销服务
+     * @param service_name 服务名称
+     * @return 成功返回true
+     */
+    bool unregisterService(const std::string& service_name);
+    
+    /**
+     * @brief 启动服务
+     * @param service_name 服务名称
+     * @return 成功返回true
+     */
+    bool startService(const std::string& service_name);
+    
+    /**
+     * @brief 停止服务
+     * @param service_name 服务名称
+     * @return 成功返回true
+     */
+    bool stopService(const std::string& service_name);
+    
+    /**
+     * @brief 重启服务
+     * @param service_name 服务名称
+     * @return 成功返回true
+     */
+    bool restartService(const std::string& service_name);
+    
+    /**
+     * @brief
