@@ -72,4 +72,11 @@ struct KernelConfig {
     std::string arch;                           ///< 架构
     std::vector<KernelParameter> parameters;    ///< 参数列表
     std::vector<KernelModule> modules;          ///< 模块列表
-    std
+    std::unordered_map<std::string, std::string> sysctl_settings;  ///< sysctl设置
+};
+
+/**
+ * @class KernelConfigManager
+ * @brief 内核配置管理器
+ * 
+ * 负责管理内核配置参数的加载、验证、应用和持久
