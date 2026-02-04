@@ -702,4 +702,8 @@ private:
     mutable std::string last_error_;
 };
 
-File::
+File::File() : impl_(std::make_unique<Impl>()) {}
+
+File::~File() = default;
+
+bool File::open(const
