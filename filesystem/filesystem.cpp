@@ -706,4 +706,13 @@ File::File() : impl_(std::make_unique<Impl>()) {}
 
 File::~File() = default;
 
-bool File::open(const
+bool File::open(const std::string& path, const std::string& mode) {
+    return impl_->open(path, mode);
+}
+
+void File::close() {
+    impl_->close();
+}
+
+ssize_t File::read(void* buffer, size_t size) {
+    return impl_->read(buffer, size
