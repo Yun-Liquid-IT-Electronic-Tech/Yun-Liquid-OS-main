@@ -460,3 +460,7 @@ public:
      * @brief 读取下一个目录项
      * @return 目录项信息，如果到达末尾则返回空对象
      */
+    FileInfo readNext();
+    
+    /**
+     * @
