@@ -54,4 +54,22 @@ struct KernelParameter {
  * @brief 内核模块配置
  */
 struct KernelModule {
+    std::string name;           ///< 模块名称
+    std::string description;    ///< 模块描述
+    std::string file_path;      ///< 模块文件路径
+    std::vector<std::string> parameters;    ///< 模块参数
+    std::vector<std::string> dependencies;  ///< 依赖模块
+    bool auto_load;             ///< 是否自动加载
+    bool is_builtin;            ///< 是否为内置模块
+};
+
+/**
+ * @struct KernelConfig
+ * @brief 内核配置集合
+ */
+struct KernelConfig {
+    std::string version;                        ///< 内核版本
+    std::string arch;                           ///< 架构
+    std::vector<KernelParameter> parameters;    ///< 参数列表
+    std::vector<KernelModule> modules;          ///< 模块列表
     std
