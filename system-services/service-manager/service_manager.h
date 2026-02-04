@@ -186,3 +186,6 @@ public:
      * @return 成功返回true
      */
     bool setServiceConfig(const std::string& service_name, const ServiceConfig& config);
+    
+    /**
+     * @brief 启用服务自动启动
