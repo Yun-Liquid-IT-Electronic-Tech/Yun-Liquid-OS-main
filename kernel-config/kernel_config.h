@@ -128,4 +128,6 @@ public:
     /**
      * @brief 获取当前内核参数值
      * @param param_name 参数名称
-     * @return 参数值
+     * @return 参数值，如果参数不存在则返回空字符串
+     */
+    std::string getParameterValue
