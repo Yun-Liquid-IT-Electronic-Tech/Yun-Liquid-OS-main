@@ -692,4 +692,14 @@ public:
     }
     
     std::string getLastError() const {
-        return
+        return last_error_;
+    }
+
+private:
+    int fd_;
+    off_t file_size_;
+    FileInfo file_info_;
+    mutable std::string last_error_;
+};
+
+File::
