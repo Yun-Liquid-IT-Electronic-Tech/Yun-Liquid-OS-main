@@ -745,4 +745,97 @@ bool File::flush() {
 // Directory 类实现
 class Directory::Impl {
 public:
-    Impl() :
+    Impl() : dir_(nullptr) {}
+    
+    ~Impl() {
+        close();
+    }
+    
+    bool open(const std::string& path) {
+        if (dir_) {
+            close();
+        }
+        
+        dir_ = opendir(path.c_str());
+        if (!dir_) {
+            last_error_ = "无法打开目录: " + std::string(strerror(errno));
+            return false;
+        }
+        
+        current_path_ = path;
+        return true;
+    }
+    
+    void close() {
+        if (dir_) {
+            closedir(dir_);
+            dir_ = nullptr;
+        }
+    }
+    
+    FileInfo readNext() {
+        if (!dir_) {
+            last_error_ = "目录未打开";
+            return FileInfo{};
+        }
+        
+        struct dirent* entry = readdir(dir_);
+        if (!entry) {
+            return FileInfo{}; // 到达目录末尾
+        }
+        
+        FileInfo info;
+        info.name = entry->d_name;
+        info.path = current_path_ + "/" + info.name;
+        
+        // 获取文件详细信息
+        struct stat st;
+        if (stat(info.path.c_str(), &st) == 0) {
+            info.size = st.st_size;
+            info.permissions = st.st_mode;
+            info.owner = st.st_uid;
+            info.group = st.st_gid;
+            info.created_time = std::chrono::system_clock::from_time_t(st.st_ctime);
+            info.modified_time = std::chrono::system_clock::from_time_t(st.st_mtime);
+            info.accessed_time = std::chrono::system_clock::from_time_t(st.st_atime);
+            
+            // 设置文件类型
+            if (S_ISREG(st.st_mode)) info.type = FileType::Regular;
+            else if (S_ISDIR(st.st_mode)) info.type = FileType::Directory;
+            else if (S_ISLNK(st.st_mode)) info.type = FileType::SymbolicLink;
+            else if (S_ISBLK(st.st_mode)) info.type = FileType::BlockDevice;
+            else if (S_ISCHR(st.st_mode)) info.type = FileType::CharacterDevice;
+            else if (S_ISFIFO(st.st_mode)) info.type = FileType::FIFO;
+            else if (S_ISSOCK(st.st_mode)) info.type = FileType::Socket;
+        }
+        
+        return info;
+    }
+    
+    std::string getLastError() const {
+        return last_error_;
+    }
+
+private:
+    DIR* dir_;
+    std::string current_path_;
+    mutable std::string last_error_;
+};
+
+Directory::Directory() : impl_(std::make_unique<Impl>()) {}
+
+Directory::~Directory() = default;
+
+bool Directory::open(const std::string& path) {
+    return impl_->open(path);
+}
+
+void Directory::close() {
+    impl_->close();
+}
+
+FileInfo Directory::readNext() {
+    return impl_->readNext();
+}
+
+} // namespace CloudFlow::FileSystem
