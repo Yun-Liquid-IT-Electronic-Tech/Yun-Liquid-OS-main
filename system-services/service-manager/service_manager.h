@@ -224,3 +224,7 @@ public:
      * @param callback 回调函数
      */
     void setStatusChangeCallback(std::function<void(const std::string&, ServiceState, ServiceState)> callback);
+    
+    /**
+     * @brief 设置服务错误回调
+     * @
