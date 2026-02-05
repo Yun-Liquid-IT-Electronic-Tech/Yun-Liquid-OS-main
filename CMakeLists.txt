@@ -11,3 +11,6 @@ add_subdirectory(device-drivers)
 
 # 添加文件系统模块
 add_subdirectory(filesystem)
+
+# 添加引导程序模块
+add_subdirectory(boot-program)
