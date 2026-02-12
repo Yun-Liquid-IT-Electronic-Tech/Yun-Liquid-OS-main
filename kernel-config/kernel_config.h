@@ -15,7 +15,13 @@
 #include <unordered_map>
 #include <memory>
 #include <fstream>
-#include <json/json.h>
+#include <map>
+
+// 简单的配置解析函数
+std::map<std::string, std::string> parseSimpleConfig(const std::string& content);
+
+// 简单的配置生成函数
+std::string generateSimpleConfig(const std::map<std::string, std::string>& config);
 
 namespace CloudFlow::Kernel {
 

@@ -19,7 +19,34 @@
 #include <dirent.h>
 #include <sys/wait.h>
 #include <signal.h>
-#include <json/json.h>
+#include <map>
+
+// 简单的配置解析函数
+std::map<std::string, std::string> parseSimpleConfig(const std::string& content) {
+    std::map<std::string, std::string> config;
+    std::istringstream stream(content);
+    std::string line;
+    
+    while (std::getline(stream, line)) {
+        size_t pos = line.find('=');
+        if (pos != std::string::npos) {
+            std::string key = line.substr(0, pos);
+            std::string value = line.substr(pos + 1);
+            config[key] = value;
+        }
+    }
+    
+    return config;
+}
+
+// 简单的配置生成函数
+std::string generateSimpleConfig(const std::map<std::string, std::string>& config) {
+    std::ostringstream stream;
+    for (const auto& pair : config) {
+        stream << pair.first << "=" << pair.second << "\n";
+    }
+    return stream.str();
+}
 
 namespace CloudFlow::Kernel {
 
@@ -59,82 +86,75 @@ public:
             return false;
         }
         
-        Json::Value root;
-        Json::CharReaderBuilder reader;
-        std::string errors;
+        // 读取文件内容
+        std::string content((std::istreambuf_iterator<char>(file)), 
+                           std::istreambuf_iterator<char>());
         
-        if (!Json::parseFromStream(reader, file, &root, &errors)) {
-            return false;
-        }
+        // 解析简单的文本配置
+        auto config = parseSimpleConfig(content);
         
-        return parseConfig(root);
+        return parseConfig(config);
     }
     
     bool saveConfig(const std::string& config_file) const {
-        Json::Value root;
-        
-        // 保存基本配置
-        root["version"] = config_.version;
-        root["arch"] = config_.arch;
-        
-        // 保存参数
-        Json::Value params(Json::arrayValue);
-        for (const auto& param : config_.parameters) {
-            Json::Value param_obj;
-            param_obj["name"] = param.name;
-            param_obj["description"] = param.description;
-            param_obj["type"] = static_cast<int>(param.type);
-            param_obj["value"] = param.value;
-            param_obj["default_value"] = param.default_value;
-            param_obj["is_runtime"] = param.is_runtime;
-            param_obj["is_required"] = param.is_required;
-            
-            if (!param.min_value.empty()) {
-                param_obj["min_value"] = param.min_value;
-            }
-            if (!param.max_value.empty()) {
-                param_obj["max_value"] = param.max_value;
-            }
-            
-            params.append(param_obj);
-        }
-        root["parameters"] = params;
-        
-        // 保存模块
-        Json::Value modules(Json::arrayValue);
-        for (const auto& module : config_.modules) {
-            Json::Value module_obj;
-            module_obj["name"] = module.name;
-            module_obj["description"] = module.description;
-            module_obj["auto_load"] = module.auto_load;
-            module_obj["is_builtin"] = module.is_builtin;
-            
-            if (!module.file_path.empty()) {
-                module_obj["file_path"] = module.file_path;
-            }
-            
-            modules.append(module_obj);
-        }
-        root["modules"] = modules;
-        
-        // 保存sysctl设置
-        Json::Value sysctl_obj;
-        for (const auto& setting : config_.sysctl_settings) {
-            sysctl_obj[setting.first] = setting.second;
-        }
-        root["sysctl"] = sysctl_obj;
-        
-        // 写入文件
         std::ofstream file(config_file);
         if (!file.is_open()) {
             return false;
         }
         
-        Json::StreamWriterBuilder writer;
-        writer["indentation"] = "    ";
-        std::unique_ptr<Json::StreamWriter> json_writer(writer.newStreamWriter());
-        json_writer->write(root, &file);
+        file << "# 云流操作系统内核配置\n";
+        file << "# 版本: " << config_.version << "\n";
+        file << "# 架构: " << config_.arch << "\n";
+        file << "# 参数数量: " << config_.parameters.size() << "\n";
+        file << "# 模块数量: " << config_.modules.size() << "\n\n";
         
+        // 保存基本配置
+        file << "version=" << config_.version << "\n";
+        file << "arch=" << config_.arch << "\n\n";
+        
+        // 保存参数
+        file << "# 内核参数\n";
+        for (size_t i = 0; i < config_.parameters.size(); ++i) {
+            const auto& param = config_.parameters[i];
+            file << "parameter." << i << ".name=" << param.name << "\n";
+            file << "parameter." << i << ".description=" << param.description << "\n";
+            file << "parameter." << i << ".type=" << static_cast<int>(param.type) << "\n";
+            file << "parameter." << i << ".value=" << param.value << "\n";
+            file << "parameter." << i << ".default_value=" << param.default_value << "\n";
+            file << "parameter." << i << ".is_runtime=" << (param.is_runtime ? "true" : "false") << "\n";
+            file << "parameter." << i << ".is_required=" << (param.is_required ? "true" : "false") << "\n";
+            
+            if (!param.min_value.empty()) {
+                file << "parameter." << i << ".min_value=" << param.min_value << "\n";
+            }
+            if (!param.max_value.empty()) {
+                file << "parameter." << i << ".max_value=" << param.max_value << "\n";
+            }
+            file << "\n";
+        }
+        
+        // 保存模块
+        file << "# 内核模块\n";
+        for (size_t i = 0; i < config_.modules.size(); ++i) {
+            const auto& module = config_.modules[i];
+            file << "module." << i << ".name=" << module.name << "\n";
+            file << "module." << i << ".description=" << module.description << "\n";
+            file << "module." << i << ".auto_load=" << (module.auto_load ? "true" : "false") << "\n";
+            file << "module." << i << ".is_builtin=" << (module.is_builtin ? "true" : "false") << "\n";
+            
+            if (!module.file_path.empty()) {
+                file << "module." << i << ".file_path=" << module.file_path << "\n";
+            }
+            file << "\n";
+        }
+        
+        // 保存sysctl设置
+        file << "# sysctl设置\n";
+        for (const auto& setting : config_.sysctl_settings) {
+            file << "sysctl." << setting.first << "=" << setting.second << "\n";
+        }
+        
+        file.close();
         return true;
     }
     
@@ -405,65 +425,106 @@ private:
         return true;
     }
     
-    bool parseConfig(const Json::Value& root) {
+    bool parseConfig(const std::map<std::string, std::string>& config) {
         try {
             // 解析基本配置
-            if (root.isMember("version")) {
-                config_.version = root["version"].asString();
+            if (config.find("version") != config.end()) {
+                config_.version = config.at("version");
             }
             
-            if (root.isMember("arch")) {
-                config_.arch = root["arch"].asString();
+            if (config.find("arch") != config.end()) {
+                config_.arch = config.at("arch");
             }
             
             // 解析参数
-            if (root.isMember("parameters")) {
-                config_.parameters.clear();
-                for (const auto& param_obj : root["parameters"]) {
-                    KernelParameter param;
-                    param.name = param_obj["name"].asString();
-                    param.description = param_obj["description"].asString();
-                    param.type = static_cast<KernelParameterType>(param_obj["type"].asInt());
-                    param.value = param_obj["value"].asString();
-                    param.default_value = param_obj["default_value"].asString();
-                    param.is_runtime = param_obj["is_runtime"].asBool();
-                    param.is_required = param_obj["is_required"].asBool();
-                    
-                    if (param_obj.isMember("min_value")) {
-                        param.min_value = param_obj["min_value"].asString();
+            config_.parameters.clear();
+            for (const auto& pair : config) {
+                if (pair.first.find("parameter.") == 0 && pair.first.find(".name") != std::string::npos) {
+                    // 解析参数索引
+                    size_t pos1 = pair.first.find('.');
+                    size_t pos2 = pair.first.find('.', pos1 + 1);
+                    if (pos1 != std::string::npos && pos2 != std::string::npos) {
+                        std::string index_str = pair.first.substr(pos1 + 1, pos2 - pos1 - 1);
+                        
+                        // 构建参数配置键前缀
+                        std::string prefix = "parameter." + index_str + ".";
+                        
+                        // 检查是否包含完整的参数配置
+                        if (config.find(prefix + "name") != config.end() &&
+                            config.find(prefix + "description") != config.end() &&
+                            config.find(prefix + "type") != config.end() &&
+                            config.find(prefix + "value") != config.end() &&
+                            config.find(prefix + "default_value") != config.end() &&
+                            config.find(prefix + "is_runtime") != config.end() &&
+                            config.find(prefix + "is_required") != config.end()) {
+                            
+                            KernelParameter param;
+                            param.name = config.at(prefix + "name");
+                            param.description = config.at(prefix + "description");
+                            param.type = static_cast<KernelParameterType>(std::stoi(config.at(prefix + "type")));
+                            param.value = config.at(prefix + "value");
+                            param.default_value = config.at(prefix + "default_value");
+                            param.is_runtime = (config.at(prefix + "is_runtime") == "true");
+                            param.is_required = (config.at(prefix + "is_required") == "true");
+                            
+                            if (config.find(prefix + "min_value") != config.end()) {
+                                param.min_value = config.at(prefix + "min_value");
+                            }
+                            
+                            if (config.find(prefix + "max_value") != config.end()) {
+                                param.max_value = config.at(prefix + "max_value");
+                            }
+                            
+                            config_.parameters.push_back(param);
+                        }
                     }
-                    
-                    if (param_obj.isMember("max_value")) {
-                        param.max_value = param_obj["max_value"].asString();
-                    }
-                    
-                    config_.parameters.push_back(param);
                 }
             }
             
             // 解析模块
-            if (root.isMember("modules")) {
-                config_.modules.clear();
-                for (const auto& module_obj : root["modules"]) {
-                    KernelModule module;
-                    module.name = module_obj["name"].asString();
-                    module.description = module_obj["description"].asString();
-                    module.auto_load = module_obj["auto_load"].asBool();
-                    module.is_builtin = module_obj["is_builtin"].asBool();
-                    
-                    if (module_obj.isMember("file_path")) {
-                        module.file_path = module_obj["file_path"].asString();
+            config_.modules.clear();
+            for (const auto& pair : config) {
+                if (pair.first.find("module.") == 0 && pair.first.find(".name") != std::string::npos) {
+                    // 解析模块索引
+                    size_t pos1 = pair.first.find('.');
+                    size_t pos2 = pair.first.find('.', pos1 + 1);
+                    if (pos1 != std::string::npos && pos2 != std::string::npos) {
+                        std::string index_str = pair.first.substr(pos1 + 1, pos2 - pos1 - 1);
+                        
+                        // 构建模块配置键前缀
+                        std::string prefix = "module." + index_str + ".";
+                        
+                        // 检查是否包含完整的模块配置
+                        if (config.find(prefix + "name") != config.end() &&
+                            config.find(prefix + "description") != config.end() &&
+                            config.find(prefix + "auto_load") != config.end() &&
+                            config.find(prefix + "is_builtin") != config.end()) {
+                            
+                            KernelModule module;
+                            module.name = config.at(prefix + "name");
+                            module.description = config.at(prefix + "description");
+                            module.auto_load = (config.at(prefix + "auto_load") == "true");
+                            module.is_builtin = (config.at(prefix + "is_builtin") == "true");
+                            
+                            if (config.find(prefix + "file_path") != config.end()) {
+                                module.file_path = config.at(prefix + "file_path");
+                            }
+                            
+                            config_.modules.push_back(module);
+                        }
                     }
-                    
-                    config_.modules.push_back(module);
                 }
             }
             
             // 解析sysctl设置
-            if (root.isMember("sysctl")) {
-                config_.sysctl_settings.clear();
-                for (const auto& key : root["sysctl"].getMemberNames()) {
-                    config_.sysctl_settings[key] = root["sysctl"][key].asString();
+            config_.sysctl_settings.clear();
+            for (const auto& pair : config) {
+                if (pair.first.find("sysctl.") == 0) {
+                    size_t pos = pair.first.find('.');
+                    if (pos != std::string::npos) {
+                        std::string key = pair.first.substr(pos + 1);
+                        config_.sysctl_settings[key] = pair.second;
+                    }
                 }
             }
             
